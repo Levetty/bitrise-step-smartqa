@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/go-resty/resty/v2"
+	"io/ioutil"
+	"net/http"
 	"os"
 )
 
@@ -13,17 +14,14 @@ func main() {
 	//  envman, which is automatically installed by `bitrise setup`.
 	// A very simple example:
 
-	client := resty.New()
+	url := "https://test-executor.smart-qa.io/"
 
-	resp, err := client.R().
-		EnableTrace().
-		Get("https://test-executor.smart-qa.io/")
+	resp, _ := http.Get(url)
+	defer resp.Body.Close()
 
-	if err != nil {
-		fmt.Println(err)
-	}
+	byteArray, _ := ioutil.ReadAll(resp.Body)
 
-	fmt.Println(resp)
+	fmt.Println(string(byteArray))
 
 	//cmdLog, err := exec.Command("bitrise", "envman", "add", "--key", "EXAMPLE_STEP_OUTPUT", "--value", "the value you want to share").CombinedOutput()
 	//if err != nil {
