@@ -64,17 +64,25 @@ toolkit:
 
 
 inputs:
-  - example_step_input: Default Value - you can leave this empty if you want to
+  - build_path:
     opts:
-      title: "Example Step Input"
-      summary: Summary. No more than 2-3 sentences.
+      title: "Build Path"
+      summary: Your application build path.
       description: |
         Description of this input.
-
         Can be Markdown formatted text.
       is_expand: true
       is_required: true
-      value_options: []
+  - api_key:
+    opts:
+      title: "API KEY"
+      summary: Your API Key.
+      description: |
+        Description of this input.
+        Can be Markdown formatted text.
+      is_expand: true
+      is_required: true
+      is_sensitive: true
 
 outputs:
   - EXAMPLE_STEP_OUTPUT:
