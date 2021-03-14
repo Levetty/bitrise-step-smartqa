@@ -64,7 +64,7 @@ toolkit:
 
 
 inputs:
-  - build_path:
+  - build_path: $BUILD_PATH
     opts:
       title: "Build Path"
       summary: Your application build path.
@@ -73,7 +73,7 @@ inputs:
         Can be Markdown formatted text.
       is_expand: true
       is_required: true
-  - api_key:
+  - api_key: $API_KEY
     opts:
       title: "API KEY"
       summary: Your API Key.
