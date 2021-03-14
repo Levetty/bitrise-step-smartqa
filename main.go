@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/sha1"
+	"encoding/json"
 	"fmt"
 	"github.com/bitrise-io/go-utils/log"
 	"github.com/bitrise-tools/go-steputils/stepconf"
@@ -28,6 +29,17 @@ func failed(cause string) {
 	os.Exit(1)
 }
 
+type UploadBuildBody struct {
+	AppURL string `json:"appURL"`
+	ApiKey string `json:"apiKey"`
+}
+
+type UploadBuildReq struct {
+	Data UploadBuildBody `json:"data"`
+}
+
+type reqHeader = map[string]string
+
 func main() {
 	var cfg Config
 	bucketName := "e2e-test-dev.appspot.com"
@@ -48,16 +60,26 @@ func main() {
 
 	client := resty.New()
 
-	res, err := client.R().SetBody(fileBytes).SetHeaders(map[string]string{"Content-Type": "application/zip"}).Post(uploadURL)
+	res, err := client.R().SetBody(fileBytes).SetHeaders(reqHeader{"Content-Type": "application/zip"}).Post(uploadURL)
 	if err != nil {
 		failed(err.Error())
 	}
 
 	log.Printf(res.String())
 
-	body := map[string]string{"appURL": appURL, "apiKey": string(cfg.APIKey)}
-	fmt.Println(body)
-	resp, err := client.R().SetBody(body).SetHeaders(map[string]string{"Content-Type": "application/json"}).Post(functionsURL)
+	body := UploadBuildReq{
+		Data: UploadBuildBody{
+			AppURL: appURL,
+			ApiKey: string(cfg.APIKey),
+		},
+	}
+
+	j, err := json.Marshal(body)
+	if err != nil {
+		failed(err.Error())
+	}
+
+	resp, err := client.R().SetBody(string(j)).SetHeaders(reqHeader{"Content-Type": "application/json"}).Post(functionsURL)
 	if err != nil {
 		failed(err.Error())
 	}
