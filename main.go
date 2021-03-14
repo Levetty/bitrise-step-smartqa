@@ -9,6 +9,7 @@ import (
 	"github.com/go-resty/resty/v2"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"time"
 )
 
@@ -43,6 +44,7 @@ type reqHeader = map[string]string
 func main() {
 	var cfg Config
 	bucketName := "e2e-test-dev.appspot.com"
+	tmpArchiveFileName := "archive.app.zip"
 	remotePath := fmt.Sprintf("tmp/builds/%s.app.zip", hash())
 	uploadURL := fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o?name=%s", bucketName, remotePath)
 	appURL := fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o/%s", bucketName, remotePath)
@@ -52,7 +54,12 @@ func main() {
 		failed(err.Error())
 	}
 
-	fileBytes, err := ioutil.ReadFile(cfg.BuildPath)
+	fmt.Println(exec.Command("zip", "-r", tmpArchiveFileName, cfg.BuildPath).String())
+	if _ ,err := exec.Command("zip", tmpArchiveFileName, cfg.BuildPath).Output(); err != nil {
+		failed(err.Error())
+	}
+
+	fileBytes, err := ioutil.ReadFile(tmpArchiveFileName)
 	if err != nil {
 		msg := fmt.Sprintf("err: %s, path: %s", err.Error(), cfg.BuildPath)
 		failed(msg)
