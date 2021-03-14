@@ -55,9 +55,14 @@ func main() {
 	}
 
 	fmt.Println(exec.Command("zip", "-r", tmpArchiveFileName, cfg.BuildPath).String())
-	if _ ,err := exec.Command("zip", tmpArchiveFileName, cfg.BuildPath).Output(); err != nil {
+	o, err := exec.Command("zip", tmpArchiveFileName, cfg.BuildPath).Output()
+	if err != nil {
 		failed(err.Error())
 	}
+	fmt.Println(string(o))
+
+	oo, err := exec.Command("ls -la").Output()
+	fmt.Println(string(oo))
 
 	fileBytes, err := ioutil.ReadFile(tmpArchiveFileName)
 	if err != nil {
@@ -67,12 +72,12 @@ func main() {
 
 	client := resty.New()
 
-	res, err := client.R().SetBody(fileBytes).SetHeaders(reqHeader{"Content-Type": "application/zip"}).Post(uploadURL)
-	if err != nil {
-		failed(err.Error())
+	if _, err := client.R().SetBody(fileBytes).SetHeaders(reqHeader{"Content-Type": "application/zip"}).Post(uploadURL); err != nil {
+		msg := fmt.Sprintf("failed to upload zip. err: %s", err.Error())
+		failed(msg)
 	}
 
-	log.Printf(res.String())
+	log.Printf(fmt.Sprintf("upload complete! file: %s", appURL))
 
 	body := UploadBuildReq{
 		Data: UploadBuildBody{
@@ -86,11 +91,9 @@ func main() {
 		failed(err.Error())
 	}
 
-	resp, err := client.R().SetBody(string(j)).SetHeaders(reqHeader{"Content-Type": "application/json"}).Post(functionsURL)
-	if err != nil {
+	if _, err := client.R().SetBody(string(j)).SetHeaders(reqHeader{"Content-Type": "application/json"}).Post(functionsURL); err != nil {
 		failed(err.Error())
 	}
 
-	log.Printf(resp.String())
 	os.Exit(0)
 }
