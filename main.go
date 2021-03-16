@@ -47,13 +47,13 @@ func zip(path, zipName string) error {
 	return nil
 }
 
-type UploadBuildBody struct {
+type RunWithAppBody struct {
 	AppURL string `json:"appURL"`
 	ApiKey string `json:"apiKey"`
 }
 
-type UploadBuildReq struct {
-	Data UploadBuildBody `json:"data"`
+type RunWithAppReq struct {
+	Data RunWithAppBody `json:"data"`
 }
 
 type reqHeader = map[string]string
@@ -90,8 +90,8 @@ func main() {
 
 	log.Printf(fmt.Sprintf("upload complete! file: %s", appURL))
 
-	body := UploadBuildReq{
-		Data: UploadBuildBody{
+	body := RunWithAppReq{
+		Data: RunWithAppBody{
 			AppURL: appURL,
 			ApiKey: string(cfg.APIKey),
 		},
