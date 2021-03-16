@@ -3,13 +3,14 @@ package main
 import (
 	"crypto/sha1"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/bitrise-io/go-utils/log"
 	"github.com/bitrise-tools/go-steputils/stepconf"
 	"github.com/go-resty/resty/v2"
+	"github.com/mholt/archiver/v3"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"time"
 )
 
@@ -28,6 +29,22 @@ func hash() string {
 func failed(cause string) {
 	log.Errorf(cause)
 	os.Exit(1)
+}
+
+// zip 引数のパス配下のファイルを zip で圧縮する。
+// 同名の zip が存在する場合は削除してから圧縮する。
+func zip(path, zipName string) error {
+	if err := os.RemoveAll(zipName); err != nil {
+		msg := fmt.Sprintf("cannot remove %s. err: %s", zipName, err.Error())
+		return errors.New(msg)
+	}
+
+	if err := archiver.Archive([]string{path}, zipName); err != nil {
+		msg := fmt.Sprintf("cannot archive %s, err: %s", zipName, err.Error())
+		return errors.New(msg)
+	}
+
+	return nil
 }
 
 type UploadBuildBody struct {
@@ -54,19 +71,13 @@ func main() {
 		failed(err.Error())
 	}
 
-	fmt.Println(exec.Command("zip", "-r", tmpArchiveFileName, cfg.BuildPath).String())
-	o, err := exec.Command("zip", tmpArchiveFileName, cfg.BuildPath).Output()
-	if err != nil {
+	if err := zip(cfg.BuildPath, tmpArchiveFileName); err != nil {
 		failed(err.Error())
 	}
-	fmt.Println(string(o))
-
-	oo, err := exec.Command("ls -la").Output()
-	fmt.Println(string(oo))
 
 	fileBytes, err := ioutil.ReadFile(tmpArchiveFileName)
 	if err != nil {
-		msg := fmt.Sprintf("err: %s, path: %s", err.Error(), cfg.BuildPath)
+		msg := fmt.Sprintf("err: %s, path: %s", err.Error(), tmpArchiveFileName)
 		failed(msg)
 	}
 
@@ -94,6 +105,8 @@ func main() {
 	if _, err := client.R().SetBody(string(j)).SetHeaders(reqHeader{"Content-Type": "application/json"}).Post(functionsURL); err != nil {
 		failed(err.Error())
 	}
+
+	log.Printf("successfully start to run test!")
 
 	os.Exit(0)
 }
