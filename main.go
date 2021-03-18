@@ -60,7 +60,7 @@ type reqHeader = map[string]string
 
 func main() {
 	var cfg Config
-	bucketName := "e2e-test-dev.appspot.com"
+	bucketName := "smart-qa-prod.appspot.com"
 	tmpArchiveFileName := "archive.app.zip"
 	remotePath := fmt.Sprintf("tmp/builds/%s.app.zip", hash())
 	uploadURL := fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o?name=%s", bucketName, remotePath)
