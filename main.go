@@ -65,7 +65,7 @@ func main() {
 	remotePath := fmt.Sprintf("tmp/builds/%s.app.zip", hash())
 	uploadURL := fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o?name=%s", bucketName, remotePath)
 	appURL := fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o/%s", bucketName, remotePath)
-	functionsURL := "https://asia-northeast1-e2e-test-dev.cloudfunctions.net/runWithApp"
+	functionsURL := "https://asia-northeast1-smart-qa-prod.cloudfunctions.net/runWithApp"
 
 	if err := stepconf.Parse(&cfg); err != nil {
 		failed(err.Error())
