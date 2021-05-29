@@ -48,12 +48,12 @@ toolkit:
     package_name: github.com/Levetty/bitrise-step-smartqa
 
 inputs:
-  - build_path:
+  - build_path: "$BITRISE_APP_DIR_PATH"
     opts:
       title: "Build Path"
       summary: Your application build path.
       description: |
-        Path to your .app file.
+        Path to your .app directory.
       is_expand: true
       is_required: true
   - api_key:
