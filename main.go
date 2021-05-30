@@ -58,6 +58,15 @@ type RunWithAppReq struct {
 
 type reqHeader = map[string]string
 
+type RunWithAppErrorRes struct {
+	Error RunWithAppError
+}
+
+type RunWithAppError struct {
+	Message string
+	Status  string
+}
+
 func main() {
 	var cfg Config
 	bucketName := "smart-qa-prod.appspot.com"
@@ -83,8 +92,15 @@ func main() {
 
 	client := resty.New()
 
-	if _, err := client.R().SetBody(fileBytes).SetHeaders(reqHeader{"Content-Type": "application/zip"}).Post(uploadURL); err != nil {
+	uploadRes, err := client.R().SetBody(fileBytes).SetHeaders(reqHeader{"Content-Type": "application/zip"}).Post(uploadURL)
+	if err != nil {
 		msg := fmt.Sprintf("failed to upload zip. err: %s", err.Error())
+		failed(msg)
+	}
+
+	if uploadRes.StatusCode() > 299 {
+		// TODO: 詳細なエラーを表示すること。（HTTP status に応じたエラーの出し分けとか。）
+		msg := "failed to upload zip."
 		failed(msg)
 	}
 
@@ -102,8 +118,16 @@ func main() {
 		failed(err.Error())
 	}
 
-	if _, err := client.R().SetBody(string(j)).SetHeaders(reqHeader{"Content-Type": "application/json"}).Post(functionsURL); err != nil {
+	res, err := client.R().SetBody(string(j)).SetHeaders(reqHeader{"Content-Type": "application/json"}).SetError(&RunWithAppErrorRes{}).Post(functionsURL)
+
+	if err != nil {
 		failed(err.Error())
+	}
+
+	// Status Code が 300 以上の場合は異常とみなす。go-resty の制約上、`RunWithAppErrorRes` というところにエラーが入ってくることに注意。
+	if res.StatusCode() > 299 {
+		errMessage := res.Error().(*RunWithAppErrorRes).Error.Message
+		failed(errMessage)
 	}
 
 	log.Printf("successfully start to run test!")

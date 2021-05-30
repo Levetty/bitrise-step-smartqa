@@ -33,7 +33,7 @@ workflows:
         run_if: true
         inputs:
         - api_key: $API_KEY
-        - build_path: $BUILD_PATH
+        - build_path: ~/Downloads/sportslab_app.app
 
   # ----------------------------------------------------------------
   # --- workflows to Share this step into a Step Library
